@@ -13,7 +13,7 @@ s3 = boto3.client('s3',
     aws_secret_access_key=SECRET_KEY)
 
 try:
-    s3.download_file('pdw-export.alpha', 'deals.csv.gz', 'test_tasks/deals.csv.gz')
+    s3.download_file('pdw-export.alpha', 'deals.csv.gz', '/test_tasks/deals.csv.gz')
 except botocore.exceptions.ClientError as e:
     if e.response['Error']['Code'] == "404":
         print("The object does not exist.")
