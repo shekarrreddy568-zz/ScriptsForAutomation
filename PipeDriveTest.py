@@ -5,15 +5,15 @@ import json
 import requests
 import botocore
 
-ACCESS_KEY = '​AKIAI7LDULX7AFF2VNYQ'
-SECRET_KEY = '​​4TkP/klpomftZODBk4iwNw0iWBYCyIIajEanpJOC'
+ACCESS_KEY = 'xxx'
+SECRET_KEY = '​​xxx'
 
 s3 = boto3.client('s3',
     aws_access_key_id=ACCESS_KEY,
     aws_secret_access_key=SECRET_KEY)
 
 try:
-    s3.download_file('pdw-export.alpha', 'deals.csv.gz', '/test_tasks/deals.csv.gz')
+    deals_csv = s3.download_file('pdw-export.alpha', 'deals.csv.gz', 'test_tasks/deals.csv.gz')
 except botocore.exceptions.ClientError as e:
     if e.response['Error']['Code'] == "404":
         print("The object does not exist.")
