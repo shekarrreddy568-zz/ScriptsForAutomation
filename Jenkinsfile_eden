@@ -1,0 +1,95 @@
+
+def schema_registry
+def zookeeper
+def template_path 
+def schemas_dir
+def remote = [:]
+remote.name = 'kafka-broker'
+remote.allowAnyHosts = true
+
+pipeline {
+  agent none
+  environment {
+	  GIT_CREDS = credentials('github_creds_for_jenkins')
+	  SSH_CREDS = credentials('ssh_creds_e960438adm')
+    }
+  options { disableConcurrentBuilds() }
+
+  stages {
+
+		stage('extract from previous stage') {
+			agent { label 'linux' }
+			when { environment name: 'BRANCH_NAME', value: 'FAIT | ERGODEV' }
+			steps{
+				echo "branch : ${env.BRANCH_NAME}"
+				sh 'cp /var/lib/jenkins/transports.py .'
+
+				script {
+					template_path = "${env.WORKSPACE}/templates/MLK_EMGM.yml"
+					schemas_dir = "\\\"${env.WORKSPACE}/schemas\\\""
+					if ((env.BRANCH_NAME) == 'FAIT') {
+						zookeeper = "\\\"kfkie0a111.linux.eden\\\""
+						schema_registry = "\\\"https://kfkie0a313.linux.eden:8081\\\""
+						remote.host = 'kfkie0a211.linux.eden'
+						}
+					else if ((env.BRANCH_NAME) == 'ERGODEV') {
+						zookeeper = "\\\"kfkie0f01111.linux.eden\\\""
+						schema_registry = "\\\"https://kfkie0f01311.linux.eden:8081\\\""
+						remote.host = 'kfkie0f01211.linux.eden'
+						}
+				}
+
+				echo "sr_url: ${schema_registry}"
+				echo "schemas_dir: ${schemas_dir}"
+				sh """
+				python -c "import transports; transports.readSchema(${schema_registry}, ${schemas_dir})" ${template_path}
+				"""
+
+				echo "pushing the extracted schemas to the branch: ${env.BRANCH_NAME}"
+				sh "git remote rm origin"
+				sh "git add ${env.WORKSPACE}/schemas"
+				sh "git remote add origin https://${GIT_CREDS_USR}:${GIT_CREDS_PSW}@github.itergo.com/ikep/tenant-ikep.git"                     
+				sh "git commit -a -m 'added schema files' | true" 
+				sh "git push origin HEAD:${env.BRANCH_NAME}"
+				
+			}
+		}
+
+		stage('transport to next stage') {
+			agent { label 'linux' }
+			when { environment name: 'BRANCH_NAME', value: "${env.TAG_NAME}" } 	
+			steps{
+				echo "TAG: ${env.TAG_NAME}"
+				sh 'cp /var/lib/jenkins/transports.py .'
+
+				script {
+					template_path = "${env.WORKSPACE}/templates/MLK_EMGM.yml"
+					schemas_dir = "\\\"${env.WORKSPACE}/schemas\\\""
+					if ((env.TAG_NAME).startsWith('FAIT-v')) {
+						zookeeper = "\\\"kfkie0f01111.linux.eden\\\""
+						schema_registry = "\\\"https://kfkie0f01311.linux.eden:8081\\\""
+						remote.host = 'kfkie0f01211.linux.eden'
+						}
+					echo "zookeeper: ${zookeeper}"
+					echo "schema_registry: ${schema_registry}"
+					}
+
+					sh """
+					python -c "import transports; transports.registerSchema(${schema_registry},${schemas_dir})" ${template_path}  
+					"""
+					script {
+						remote.user = "${SSH_CREDS_USR}"
+						remote.password = "${SSH_CREDS_PSW}"
+					} 
+					sshPut remote: remote, from: 'templates/MLK_EMGM.yml', into: '.'
+					sshPut remote: remote, from: './transports.py', into: '.'
+					sshCommand remote: remote, command: """sudo python -c "import transports; transports.createTopic(${zookeeper})" MLK_EMGM.yml"""
+					sshRemove remote: remote, path: "./MLK_EMGM.yml"
+					sshRemove remote: remote, path: "./transports.py"
+					sshRemove remote: remote, path: "./transports.pyc"
+			}
+		}
+
+    
+  }
+}
