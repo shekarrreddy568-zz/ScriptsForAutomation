@@ -1,0 +1,25 @@
+- name: restart confluent-schema-registry
+  systemd:
+    name: "{{schemaregistry.service_name}}"
+    state: restarted
+    daemon_reload: yes
+
+- name: wait for confluent-schema-registry restart
+  wait_for:
+    host: "{{ inventory_hostname }}"
+    port: "{{ schemaregistry.port }}"
+    timeout: 300
+    delay: 10
+
+- name: restart confluent-kafka-connect
+  systemd:
+    name: "{{kafkaconnect.service_name}}"
+    state: restarted
+    daemon_reload: yes
+
+- name: wait for confluent-kafka-connect restart
+  wait_for:
+    host: "{{ inventory_hostname }}"
+    port: "{{ kctenant.port }}"
+    timeout: 300
+    delay: 10

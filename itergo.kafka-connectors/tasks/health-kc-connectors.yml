@@ -1,0 +1,130 @@
+- name: set the kafka connect service name and port
+  set_fact: 
+    kafkaconnect:
+      service_name: confluent-kafka-connect-{{ kctenant.name }}-{{ kctenant.cluster }}
+  when: inventory_hostname in groups['kafka-connect'] and deploy_kafka_connect == true
+
+- name: copy ibmmq client jars to host
+  copy:
+    src: "{{ cifs.ConfluentPlatformLocalPath }}/ssl_certs/IBMMQ/9.0.0.5-IBM-MQ-Install-Java-All.jar"
+    dest: /tmp
+    remote_src: yes
+
+- name: install ibmmq client jars to host
+  shell: |
+    java -jar /tmp/9.0.0.5-IBM-MQ-Install-Java-All.jar --acceptLicense /usr/share/java/kafka-connect-ibmmq/
+    rm -rf /tmp/9.0.0.5-IBM-MQ-Install-Java-All.jar
+  notify:
+    - restart confluent-kafka-connect
+    - wait for confluent-kafka-connect restart
+
+# - name: copy health transform jar to plugin path
+#   copy:
+#     src: "{{ cifs.ConfluentPlatformLocalPath }}/ssl_certs/IBMMQ/{{ item.filename }}"
+#     dest: "{{ itergo.plugins_path }}"
+#     remote_src: yes
+#     owner: root
+#     group: root
+#     mode: 0770
+#     force: yes
+#   with_items:
+#     - { filename: "transformerUber-0.0.1.jar" }
+#   notify:
+#     - restart confluent-kafka-connect
+#     - wait for confluent-kafka-connect restart
+
+# - name: Create copybooks and schemas directories
+#   file:
+#     path: "{{ itergo.plugins_path }}/{{ item }}"
+#     state: directory
+#     owner: root
+#     group: root
+#     mode: 0770
+#   with_items:
+#     - copybooks
+#     - schemas
+
+# - name: copy health copybooks to plugin path
+#   copy:
+#     src: "{{ cifs.ConfluentPlatformLocalPath }}/ssl_certs/IBMMQ/copybooks/{{ item.filename }}"
+#     dest: "{{ itergo.plugins_path }}/copybooks"
+#     remote_src: yes
+#     owner: root
+#     group: root
+#     mode: 0770
+#     force: yes
+#   with_items:
+#     - { filename: "PBS480" }
+#     - { filename: "VSS21591" }
+#   notify:
+#     - restart confluent-kafka-connect
+#     - wait for confluent-kafka-connect restart
+
+# - name: copy health schemas to plugin path
+#   copy:
+#     src: "{{ cifs.ConfluentPlatformLocalPath }}/ssl_certs/IBMMQ/schemas/{{ item.filename }}"
+#     dest: "{{ itergo.plugins_path }}/schemas/"
+#     remote_src: yes
+#     owner: root
+#     group: root
+#     mode: 0770
+#     force: yes
+#   with_items:
+#     - { filename: "testGesu3Seg.avsc" }
+#   notify:
+#     - restart confluent-kafka-connect
+#     - wait for confluent-kafka-connect restart
+
+- name: copy ssl related files to host
+  copy:
+    src: "{{ cifs.ConfluentPlatformLocalPath }}/ssl_certs/IBMMQ/{{ item.filename }}"
+    dest: "{{ ssl.path }}/{{ item.filename }}"
+    remote_src: yes
+    owner: root
+    group: root
+    mode: 0770
+    force: no
+  with_items:
+    - { filename: "LCHLTHT-key.p12" }
+
+- name: keytool import ERGO Root CA certificate to ibmmq keystore
+  java_cert:
+    cert_alias: CARoot
+    cert_path: "{{ cifs.ConfluentPlatformLocalPath }}/ssl_certs/certs_CA_{{ stage }}/ERGO_ROOT_CA_{{ stage }}.cer"
+    keystore_path: "{{ ssl.path }}/LCHLTHT-key.p12"
+    keystore_pass: "{{ ssl.ibmmq_keystore_password }}"
+    keystore_create: no
+    state: present
+  notify:
+    - restart confluent-kafka-connect
+    - wait for confluent-kafka-connect restart
+
+- name: keytool import IBMMQ Root CA certificate to schema registry server truststore
+  java_cert:
+    cert_alias: client.IBMMQ_CA.cer
+    cert_path: "{{ cifs.ConfluentPlatformLocalPath }}/ssl_certs/IBMMQ/client.IBMMQ_CA.cer"
+    keystore_path: "{{ ssl.path }}/server.truststore.{{ ansible_facts['hostname'] }}.p12"
+    keystore_pass: "{{ ssl.keystore_password }}"
+    keystore_create: no
+    state: present
+  notify:
+    - restart confluent-schema-registry
+    - wait for confluent-schema-registry restart
+
+- meta: flush_handlers
+
+- name: copy ibmmq-source connector conf 
+  template:
+    src: "health-ibmmq-source.json"
+    dest: "{{itergo.connectors_dir}}"
+    mode: 0640
+    owner: root
+    group: root
+
+- name: deploy ibmmq-source connector
+  command: >
+    curl -k --cert {{ cifs.ConfluentPlatformLocalPath }}/ssl_certs/clients/ITERGO_ANSIBLE/client.ITERGO_ANSIBLE.cer 
+    --key {{ cifs.ConfluentPlatformLocalPath }}/ssl_certs/clients/ITERGO_ANSIBLE/client.ITERGO_ANSIBLE.keystore.key 
+    -d @"{{itergo.connectors_dir}}/health-ibmmq-source.json" 
+    -H "Content-Type: application/json" 
+    -X POST https://{{ ansible_facts['hostname'] }}.{{ dns_zone }}.{{ stage }}:{{ kctenant.port }}/connectors

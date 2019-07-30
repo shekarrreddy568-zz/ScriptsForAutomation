@@ -1,0 +1,32 @@
+############# HEALTH-KC #######################
+
+- name: ACLs - give operation Read and Write to HEALTH-KC to topic HEALTH_
+  shell: |
+    export KAFKA_OPTS="-Djava.security.auth.login.config={{ kafkabroker.jaas_conf }}"
+    kafka-acls --authorizer-properties zookeeper.connect={% for host in groups['zookeeper'] %}{% if loop.index > 1%},{% endif %}{{ host }}:{{zookeeper.clientPort}}{% endfor %} \
+    --add --allow-principal User:CN=HEALTH_KC \
+    --operation Write --operation Read --topic HEALTH_ --resource-pattern-type prefixed
+  register: kafkaACLsResult
+  changed_when: "kafkaACLsResult.rc == -1"
+  failed_when: "kafkaACLsResult.rc >= 1"
+
+- name: ACLs - give operation Read to HEALTH-KC in group HEALTH_
+  shell: |
+    export KAFKA_OPTS="-Djava.security.auth.login.config={{ kafkabroker.jaas_conf }}"
+    kafka-acls --authorizer-properties zookeeper.connect={% for host in groups['zookeeper'] %}{% if loop.index > 1%},{% endif %}{{ host }}:{{zookeeper.clientPort}}{% endfor %} \
+    --add --allow-principal User:CN=HEALTH_KC --operation Read \
+    --group connect- --resource-pattern-type prefixed 
+  register: kafkaACLsResult
+  changed_when: "kafkaACLsResult.rc == -1"
+  failed_when: "kafkaACLsResult.rc >= 1"
+
+- name: ACLs - give operation Read and Write to HEALTH-KC to topic HEALTH_
+  shell: |
+    export KAFKA_OPTS="-Djava.security.auth.login.config={{ kafkabroker.jaas_conf }}"
+    kafka-acls --authorizer-properties zookeeper.connect={% for host in groups['zookeeper'] %}{% if loop.index > 1%},{% endif %}{{ host }}:{{zookeeper.clientPort}}{% endfor %} \
+    --add --allow-principal User:CN=LCHLTHT,OU=PDSA4D,O=ITERGO \
+    --operation Write --operation Read \
+    --topic _confluent-command
+  register: kafkaACLsResult
+  changed_when: "kafkaACLsResult.rc == -1"
+  failed_when: "kafkaACLsResult.rc >= 1"

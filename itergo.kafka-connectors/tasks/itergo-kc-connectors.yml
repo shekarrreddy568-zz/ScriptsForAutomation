@@ -1,0 +1,31 @@
+- name: copy file-source connector conf 
+  template:
+    src: "ITERGO-KC-FileStreamSource.json"
+    dest: "{{itergo.connectors_dir}}"
+    mode: 0640
+    owner: root
+    group: root
+
+- name: deploy file-source connector
+  command: >
+    curl -k --cert {{ cifs.ConfluentPlatformLocalPath }}/ssl_certs/clients/ITERGO_ANSIBLE/client.ITERGO_ANSIBLE.cer 
+    --key {{ cifs.ConfluentPlatformLocalPath }}/ssl_certs/clients/ITERGO_ANSIBLE/client.ITERGO_ANSIBLE.keystore.key 
+    -d @"{{itergo.connectors_dir}}/ITERGO-KC-FileStreamSource.json" 
+    -H "Content-Type: application/json" 
+    -X POST https://{{ ansible_facts['hostname'] }}.{{ dns_zone }}.{{ stage }}:{{ kctenant.port }}/connectors
+
+- name: copy file-sink connector conf 
+  template:
+    src: "ITERGO-KC-FileStreamSink.json"
+    dest: "{{itergo.connectors_dir}}"
+    mode: 0640
+    owner: root
+    group: root
+
+- name: deploy file-sink connector
+  command: >
+    curl -k --cert {{ cifs.ConfluentPlatformLocalPath }}/ssl_certs/clients/ITERGO_ANSIBLE/client.ITERGO_ANSIBLE.cer 
+    --key {{ cifs.ConfluentPlatformLocalPath }}/ssl_certs/clients/ITERGO_ANSIBLE/client.ITERGO_ANSIBLE.keystore.key 
+    -d @"{{itergo.connectors_dir}}/ITERGO-KC-FileStreamSink.json" 
+    -H "Content-Type: application/json" 
+    -X POST https://{{ ansible_facts['hostname'] }}.{{ dns_zone }}.{{ stage }}:{{ kctenant.port }}/connectors

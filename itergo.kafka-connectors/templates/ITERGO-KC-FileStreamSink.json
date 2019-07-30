@@ -1,0 +1,13 @@
+{
+    "name": "ITERGO-file-sink",
+    "config": {
+        "connector.class": "FileStreamSink",
+        "tasks.max": "1",
+        "file": "/tmp/sink-avro.txt",
+        "topics": "ITERGO_A_KC",
+        "key.converter": "io.confluent.connect.avro.AvroConverter",
+        "value.converter": "io.confluent.connect.avro.AvroConverter",
+        "key.converter.schema.registry.url": "https://kafka.services.eden:8001",
+        "value.converter.schema.registry.url": "https://kafka.services.eden:8001"
+          }
+}

@@ -1,0 +1,13 @@
+{
+"name": "ITERGO-file-source",
+    "config": {
+        "connector.class": "FileStreamSource",
+        "tasks.max": "1",
+        "topic": "ITERGO_A_KC",
+        "file": "/var/local/source-avro.txt",
+        "key.converter": "io.confluent.connect.avro.AvroConverter",
+		"value.converter": "io.confluent.connect.avro.AvroConverter",
+        "key.converter.schema.registry.url": "https://kafka.services.eden:8001",
+        "value.converter.schema.registry.url": "https://kafka.services.eden:8001"
+        }
+}

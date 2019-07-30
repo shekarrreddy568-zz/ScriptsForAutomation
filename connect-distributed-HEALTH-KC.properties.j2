@@ -1,0 +1,124 @@
+# Maintained by Ansible - test
+# https://kafka.apache.org/documentation/#connect
+# https://docs.confluent.io/4.1.2/connect/userguide.html#common-worker-configs
+# https://docs.confluent.io/current/connect/references/allconfigs.html#connect-allconfigs
+
+
+# A list of host/port pairs to use for establishing the initial connection to the Kafka cluster.
+bootstrap.servers={% for host in groups['kafka-broker'] %}{% if loop.index > 1%},{% endif %}{{ host }}:{{kafkabroker.port_ssl}}{% endfor %}
+
+value.converter.schema.registry.url={% for host in groups['schema-registry'] %}{% if loop.index > 1%},{% endif %}https://{{ host }}:{{ schemaregistry.port }}/{% endfor %}
+
+key.converter.schema.registry.url={% for host in groups['schema-registry'] %}{% if loop.index > 1%},{% endif %}https://{{ host }}:{{ schemaregistry.port }}/{% endfor %}
+
+key.converter=io.confluent.connect.avro.AvroConverter
+value.converter=io.confluent.connect.avro.AvroConverter
+# key.converter=org.apache.kafka.connect.json.JsonConverter
+# value.converter=org.apache.kafka.connect.json.JsonConverter
+
+# Converter-specific settings can be passed in by prefixing the Converter's setting with the converter we want to apply it to
+key.converter.schemas.enable=true
+value.converter.schemas.enable=true
+
+# group name
+group.id={{ kctenant.name }}-{{ kctenant.cluster }}_connect-cluster
+
+# The internal converter used for offsets, config, and status data is configurable and must be specified, but most users will
+internal.key.converter=org.apache.kafka.connect.json.JsonConverter
+internal.value.converter=org.apache.kafka.connect.json.JsonConverter
+internal.key.converter.schemas.enable=false
+internal.value.converter.schemas.enable=false
+
+offset.storage.topic={{ kctenant.name }}-{{ kctenant.cluster }}_connect-offsets
+offset.storage.replication.factor={{ kafkabroker.default_replication_factor }}
+offset.storage.partitions=25
+
+config.storage.topic={{ kctenant.name }}-{{ kctenant.cluster }}_connect-configs
+config.storage.replication.factor={{ kafkabroker.default_replication_factor }}
+
+status.storage.topic={{ kctenant.name }}-{{ kctenant.cluster }}_connect-status
+status.storage.replication.factor={{ kafkabroker.default_replication_factor }}
+status.storage.partitions=5
+
+# Flush much faster than normal, which is useful for testing/debugging
+offset.flush.interval.ms=10000
+
+# These are provided to inform the user about the presence of the REST host and port configs
+# Hostname & Port for the REST API to listen on. If this is set, it will bind to the interface used to listen to requests.
+#rest.host.name=
+rest.port={{ kctenant.port }}
+
+# The Hostname & Port that will be given out to other workers to connect to i.e. URLs that are routable from other servers.
+#rest.advertised.host.name=
+#rest.advertised.port=
+
+#### Metrics Reporter ###########
+#metric.reporters=io.confluent.metrics.reporter.ConfluentMetricsReporter
+#confluent.metrics.reporter.bootstrap.servers=broker1:9092,broker2:9092,broker3:9092
+#confluent.metrics.reporter.security.protocol=SSL
+#confluent.metrics.reporter.ssl.truststore.location=/etc/kafka/ssl/kafka.client.truststore.jks
+#confluent.metrics.reporter.ssl.truststore.password=KAFKASERV
+#confluent.metrics.reporter.ssl.keystore.location=/etc/kafka/ssl/kafka.client.keystore.jks
+#confluent.metrics.reporter.ssl.keystore.password=KAFKASERV
+#confluent.metrics.reporter.ssl.key.password=KAFKASERV
+
+# plugin.path=/usr/local/share/java,/usr/local/share/kafka/plugins,/opt/connectors,
+plugin.path=/usr/share/java,{{ kafkaconnect.plugins_path }}
+
+######## Kafka Connect HTTPS ################
+# rest.advertised.listener=
+
+listeners=https://{{ ansible_facts['hostname'] }}.{{ dns_zone }}.{{ stage }}:{{kctenant.port}}
+listeners.https.ssl.truststore.location={{ ssl.path }}/server.truststore.{{ kctenant.name }}_{{ kctenant.cluster }}.{{ ansible_facts['hostname'] }}.p12
+listeners.https.ssl.truststore.password={{ ssl.truststore_password }}
+listeners.https.ssl.keystore.location={{ ssl.path }}/server.keystore.{{ ansible_facts['hostname'] }}.p12
+listeners.https.ssl.keystore.password={{ ssl.keystore_password }}
+listeners.https.ssl.key.password={{ ssl.key_password }}
+listeners.https.ssl.endpoint.identification.algorithm=
+listeners.https.ssl.client.auth=required
+
+###### SSL additions ##############
+security.protocol=SSL
+#ssl.enabled.protocols=
+#ssl.keystore.type=
+#ssl.truststore.type=
+#ssl.cipher.suites=
+ssl.truststore.location={{ ssl.path }}/client.truststore.{{ kctenant.name }}_{{ kctenant.cluster }}.{{ ansible_facts['hostname'] }}.p12
+ssl.truststore.password={{ ssl.kafkaconnect_truststore_password }}
+ssl.keystore.location={{ ssl.path }}/client.keystore.{{ kctenant.name }}_{{ kctenant.cluster }}.{{ ansible_facts['hostname'] }}.p12
+ssl.keystore.password={{ ssl.kafkaconnect_keystore_password }}
+ssl.key.password={{ ssl.kafkaconnect_key_password }}
+ssl.endpoint.identification.algorithm=
+ssl.client.auth=required
+producer.security.protocol=SSL
+producer.ssl.truststore.location={{ ssl.path }}/client.truststore.{{ kctenant.name }}_{{ kctenant.cluster }}.{{ ansible_facts['hostname'] }}.p12
+producer.ssl.truststore.password={{ ssl.kafkaconnect_truststore_password }}
+producer.ssl.keystore.location={{ ssl.path }}/client.keystore.{{ kctenant.name }}_{{ kctenant.cluster }}.{{ ansible_facts['hostname'] }}.p12
+producer.ssl.keystore.password={{ ssl.kafkaconnect_keystore_password }}
+producer.ssl.key.password={{ ssl.kafkaconnect_key_password }}
+consumer.security.protocol=SSL
+consumer.ssl.truststore.location={{ ssl.path }}/client.truststore.{{ kctenant.name }}_{{ kctenant.cluster }}.{{ ansible_facts['hostname'] }}.p12
+consumer.ssl.truststore.password={{ ssl.kafkaconnect_truststore_password }}
+consumer.ssl.keystore.location={{ ssl.path }}/client.keystore.{{ kctenant.name }}_{{ kctenant.cluster }}.{{ ansible_facts['hostname'] }}.p12
+consumer.ssl.keystore.password={{ ssl.kafkaconnect_keystore_password }}
+consumer.ssl.key.password={{ ssl.kafkaconnect_key_password }}
+
+######## Producer monitoring interceptors ###########
+producer.interceptor.classes=io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor
+producer.confluent.monitoring.interceptor.security.protocol=SSL
+producer.confluent.monitoring.interceptor.ssl.truststore.location={{ ssl.path }}/client.truststore.{{ kctenant.name }}_{{ kctenant.cluster }}.{{ ansible_facts['hostname'] }}.p12
+producer.confluent.monitoring.interceptor.ssl.truststore.password={{ ssl.kafkaconnect_truststore_password }}
+producer.confluent.monitoring.interceptor.ssl.keystore.location={{ ssl.path }}/client.keystore.{{ kctenant.name }}_{{ kctenant.cluster }}.{{ ansible_facts['hostname'] }}.p12
+producer.confluent.monitoring.interceptor.ssl.keystore.password={{ ssl.kafkaconnect_keystore_password }}
+producer.confluent.monitoring.interceptor.ssl.key.password={{ ssl.kafkaconnect_key_password }}
+producer.confluent.monitoring.interceptor.bootstrap.servers={% for host in groups['kafka-broker'] %}{% if loop.index > 1%},{% endif %}{{ host }}:{{kafkabroker.port_ssl}}{% endfor %}
+
+######## Consumer monitoring interceptors ###########
+consumer.interceptor.classes=io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor
+consumer.confluent.monitoring.interceptor.security.protocol=SSL
+consumer.confluent.monitoring.interceptor.ssl.truststore.location={{ ssl.path }}/client.truststore.{{ kctenant.name }}_{{ kctenant.cluster }}.{{ ansible_facts['hostname'] }}.p12
+consumer.confluent.monitoring.interceptor.ssl.truststore.password={{ ssl.kafkaconnect_truststore_password }}
+consumer.confluent.monitoring.interceptor.ssl.keystore.location={{ ssl.path }}/client.keystore.{{ kctenant.name }}_{{ kctenant.cluster }}.{{ ansible_facts['hostname'] }}.p12
+consumer.confluent.monitoring.interceptor.ssl.keystore.password={{ ssl.kafkaconnect_keystore_password }}
+consumer.confluent.monitoring.interceptor.ssl.key.password={{ ssl.kafkaconnect_key_password }}
+consumer.confluent.monitoring.interceptor.bootstrap.servers={% for host in groups['kafka-broker'] %}{% if loop.index > 1%},{% endif %}{{ host }}:{{kafkabroker.port_ssl}}{% endfor %}

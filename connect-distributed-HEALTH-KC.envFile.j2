@@ -1,0 +1,13 @@
+## Maintained by Ansible
+KAFKA_HEAP_OPTS={{kafkaconnect.heap_opts}}
+LOG_DIR={{kafkaconnect.log_dir}}
+
+KAFKA_OPTS="-javaagent:{{ prometheus.local_path }}/jmx_prometheus_javaagent-{{ prometheus.jmx_exporter_version }}.jar={{kctenant.port_jmx}}:{{kafkaconnect.jmx_exporter_config}} \
+          -Djavax.net.ssl.trustStore={{ ssl.path }}/{{ ssl.ibmmq_keysore }} \
+          -Djavax.net.ssl.trustStorePassword={{ ssl.ibmmq_keystore_password }} \
+          -Djavax.net.ssl.keyStore={{ ssl.path }}/{{ ssl.ibmmq_keysore }} \
+          -Djavax.net.ssl.keyStorePassword={{ ssl.ibmmq_keystore_password }} \
+          -Djavax.net.ssl.keyPassword={{ ssl.ibmmq_keystore_password }} \
+          -Deks.copybooks.path={{ kafkaconnect.plugins_path }}/copybooks \
+          -Deks.schema.path={{ kafkaconnect.plugins_path }}/schemas \
+          -Dcom.ibm.mq.cfg.useIBMCipherMappings=false"
