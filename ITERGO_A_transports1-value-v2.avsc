@@ -1,0 +1,27 @@
+{
+    "fields": [
+        {
+            "type": "string", 
+            "name": "name"
+        }, 
+        {
+            "type": "int", 
+            "name": "age"
+        }, 
+        {
+            "type": "long", 
+            "name": "mobile"
+        }, 
+        {
+            "type": "string", 
+            "name": "company"
+        }, 
+        {
+            "default": "IND", 
+            "type": "string", 
+            "name": "country"
+        }
+    ], 
+    "type": "record", 
+    "name": "User"
+}

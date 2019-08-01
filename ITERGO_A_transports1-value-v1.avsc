@@ -1,0 +1,22 @@
+{
+    "fields": [
+        {
+            "type": "string", 
+            "name": "name"
+        }, 
+        {
+            "type": "int", 
+            "name": "age"
+        }, 
+        {
+            "type": "long", 
+            "name": "mobile"
+        }, 
+        {
+            "type": "string", 
+            "name": "company"
+        }
+    ], 
+    "type": "record", 
+    "name": "User"
+}
