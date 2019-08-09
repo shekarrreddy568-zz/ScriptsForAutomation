@@ -9,7 +9,6 @@ template = sys.argv[1]
 schema_registry = sys.argv[2]
 schemas_dir = sys.argv[3]
 
-
 try: 
     read_template = open(template, "r")
     dictionary = yaml.safe_load(read_template)
@@ -29,15 +28,15 @@ cert_path = "/mnt/cifsConfluentPlatform/ssl_certs/clients/ITERGO_ANSIBLE/client.
 key_path = "/mnt/cifsConfluentPlatform/ssl_certs/clients/ITERGO_ANSIBLE/client.ITERGO_ANSIBLE.keystore.key"
 
 for key in topics_dict:
-    if key['num_partitions'] > 50:
-        print("number of partitions for {} can't be greater than 50 (ikep restriction)".format(key['name']))
-        sys.exit()
+    # if key['num_partitions'] > 50:
+    #     print("number of partitions for {} can't be greater than 50 (ikep restriction)".format(key['name']))
+    #     sys.exit()
     if not key['name'].startswith(nameSpace):
         print("Topic name must start with {}_ , Please fix it and retry!".format(nameSpace))
         sys.exit()
-    topic_partition_map.append((key['name'],key['num_partitions']))
+#    topic_partition_map.append((key['name'],key['num_partitions']))
     topics.append(key['name'])
-    topic_config_map.append((key['name'],key['config']))
+#    topic_config_map.append((key['name'],key['config']))
 #    subject_compatability_map.append((key['subject'][0],key['subject'][1]))
 
 print("topics to be transported:\n {}".format(topics))
@@ -47,7 +46,7 @@ print("topic_partition_map: {}".format(topic_partition_dict))
 print("topics configuration is:\n {}".format(topic_config_dict))
 #print("subject_compatability_map is: {}".format(subject_compatability_map))
 
-def readSchema(schema_registry,schemas_dir):
+def readSchema():
     print ("checking if the {} exists if not creating it".format(schemas_dir))
     if not os.path.exists(schemas_dir):
         try:
@@ -60,12 +59,12 @@ def readSchema(schema_registry,schemas_dir):
         print ("schemas_dir: {} already exists".format(schemas_dir))
 
     subjects_url = schema_registry + "/subjects"
-    subjects = requests.get(subjects_url, cert=(cert_path, key_path))
-    if subjects.status_code == requests.codes.ok:
-        versions = subjects.json()
+    subjects_req = requests.get(subjects_url, cert=(cert_path, key_path))
+    if subjects_req.status_code == requests.codes.ok:
+        subjects = subjects_req.json()
         print ("subjects exists in {}: {}".format(schema_registry,subjects))
     else:
-        output = subjects.json()
+        output = subjects_req.json()
         print ("unable to list subjects from previous stage with the following error, Please fix it and retry!\n{}".format(output))
         sys.exit()
 
@@ -108,4 +107,4 @@ def readSchema(schema_registry,schemas_dir):
             else:
                 print ("subject {} not found in schema registry: {}".format(subject,schema_registry))
 
-readSchema(schema_registry,schemas_dir)
+readSchema()

@@ -2,6 +2,7 @@ import os
 import sys
 import yaml
 import requests
+import subprocess
 
 template = sys.argv[1]
 schema_registry_url = sys.argv[2]
@@ -16,14 +17,17 @@ except (yaml.YAMLError, yaml.MarkedYAMLError) as e:
 
 topics_dict = dictionary['topics']
 nameSpace = dictionary['nameSpace']
+topics = []
 #subjects = []
 for key in topics_dict:
-    if key['num_partitions'] > 50:
-        print("number of partitions for {} can't be greater than 50 (ikep restriction)".format(key['name']))
-        sys.exit()
+    # if key['num_partitions'] > 50:
+    #     print("number of partitions for {} can't be greater than 50 (ikep restriction)".format(key['name']))
+    #     sys.exit()
     if not key['name'].startswith(nameSpace):
         print("Topic name must start with {}_ , Please fix it and retry!".format(nameSpace))
         sys.exit()
+    topics.append(key['name'])
+    
     # if key['value_schema'] == None:
     #     print("Value schema for {} can't be null , Please provide valid subject name".format(key['name']))
     #     sys.exit()
@@ -41,7 +45,8 @@ key_path = "/mnt/cifsConfluentPlatform/ssl_certs/clients/ITERGO_ANSIBLE/client.I
 
 
 def registerSchema():
-    for topic in topics_dict:
+    for topic in topics:
+        print ("topic: {}".format(topic))
         subject_names = [topic + "-key" ,topic + "-value" ]
         print ("subject_names: {}".format(subject_names))
 
@@ -63,12 +68,12 @@ def registerSchema():
                         + schema.replace("\"", "\\\"").replace("\t", "").replace("\n", "") \
                         + "\" }"
 
-                url = schema_registry + "/subjects/" + subject + "/versions"
+                url = schema_registry_url + "/subjects/" + subject + "/versions"
                 print ("url: " + url)
                 ### Registering the schema to the next stage ###
                 request = requests.post(url, cert=(cert_path, key_path), headers=headers, data=payload)
                 if request.status_code == requests.codes.ok:
-                    print("Schema is registered successfully to : {}".format(schema_registry))
+                    print("Schema is registered successfully to : {}".format(schema_registry_url))
                     body = request.content
                     print(body)
                 else:
@@ -79,3 +84,6 @@ def registerSchema():
 
 
 registerSchema()
+
+# Run the script as follows
+## python register_schemas.py template_for_register_schemas.py.yml https://kfkie0y311.linux.eden:8081 schemas 
