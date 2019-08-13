@@ -55,7 +55,7 @@ def registerSchemasInFolder():
                     sys.exit()
             #        request.raise_for_status()
 
-def registerSchema(schema_registry):
+def registerSchema():
     for list in subjects_list:
         for dict in list:
             subject_name = dict['name']
@@ -222,9 +222,9 @@ def adminClientAPI(a):
         existing_topics.append(str(t))
         existing_partitons.append((str(t),len(t.partitions)))
 
-    print("existing_topics are: {}".format(existing_topics))
+    # print("existing_topics are: {}".format(existing_topics))
     existing_partiton_map = dict(existing_partitons)
-    print("existing_partiton_map are: {}".format(existing_partiton_map))
+    # print("existing_partiton_map are: {}".format(existing_partiton_map))
 
     for topic in topics:
         desired_partitions = topic_partition_dict['{}'.format(topic)]
@@ -312,7 +312,7 @@ if __name__ == '__main__':
     })
 
     ### functions ###
-    # registerSchema(schema_registry)
+    # registerSchema()
     # compatability_check(schema_registry)
     registerSchemasInFolder()
     adminClientAPI(a)
