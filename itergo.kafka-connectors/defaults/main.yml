@@ -1,4 +1,0 @@
-itergo:
-  connectors_dir: /etc/kafka/connectors
-  plugins_path: /usr/share/kafka-connect-connectors
-
