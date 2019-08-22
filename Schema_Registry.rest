@@ -15,7 +15,7 @@ GET http://hadoop-fra-5.intern.beon.net:8081/subjects/transactions-value/version
 
 ########
 
-POST http://hadoop-fra-5.intern.beon.net:8081/subjects/transactions-value/versions
+POST http://hadoop-fra-5.intern.beon.net:8081/subjects/transactions1-value/versions
 Content-Type: application/vnd.schemaregistry.v1+json
 
 {
