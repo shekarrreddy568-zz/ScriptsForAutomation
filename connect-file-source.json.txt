@@ -1,0 +1,12 @@
+{
+    "name": "file-source",
+    "config": {
+        "connector.class": "FileStreamSource",
+        "tasks.max": "1",
+        "topic": "ITERGO_A_KC",
+        "file": "/tmp/test.txt",
+        "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "value.converter": "org.apache.kafka.connect.json.JsonConverter"
+        
+        }
+}

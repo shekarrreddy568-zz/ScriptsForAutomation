@@ -1,0 +1,115 @@
+
+###### List the connectors ##########
+
+curl http://hadoop-fra-5.intern.beon.net:8083/connectors
+
+####### Describe Connector ######
+
+curl http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source
+
+####### Describe Connector ######
+
+curl http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/config
+
+####### check the status of a Connector ######
+
+curl http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/status
+
+
+#### Restart connector #########
+
+curl -X POST -H https://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/restart
+
+#### Pause connector #########
+
+curl -X POST -H https://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/pause
+
+#### Resume connector #########
+
+curl -X POST -H https://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/resume
+
+###### Delete a Connector ###########
+
+curl -X DELETE http://hadoop-fra-5.intern.beon.net:8083/connectors/file-sink
+
+####### Create a connector ##########
+
+curl -d @"C:\\Rajashekar\\Git\\ScriptsForAutomation\\connect-file-source.json" \
+    -H "Content-Type: application/json" \
+	-X POST http://hadoop-fra-5.intern.beon.net:8083/connectors
+
+########## Create a Source connector ###########
+POST http://hadoop-fra-5.intern.beon.net:8083/connectors
+Content-Type: application/json
+Accept: application/json
+
+{
+    "name": "file-source",
+    "config": {
+        "connector.class": "FileStreamSource",
+        "tasks.max": "1",
+        "topic": "ITERGO_A_KC",
+        "file": "/tmp/test.txt",
+        "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "value.converter": "org.apache.kafka.connect.json.JsonConverter"}
+}
+
+############ Create a sink connector #########
+
+POST http://hadoop-fra-5.intern.beon.net:8083/connectors
+Content-Type: application/json
+Accept: application/json
+
+{
+    "name": "file-sink",
+    "config": {
+        "connector.class": "FileStreamSink",
+        "tasks.max": "1",
+        "file": "/tmp/test.sink.txt",
+        "topics": "ITERGO_A_KC",
+        "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "value.converter": "org.apache.kafka.connect.json.JsonConverter"}
+}
+
+####### update the configuration for an existing connector ########
+
+PUT http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/config
+Content-Type: application/json
+Accept: application/json
+
+{
+    "connector.class": "FileStreamSource",
+    "tasks.max": "2",
+    "topic": "ITERGO_A_KC",
+    "file": "/tmp/test.txt",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter"
+}
+
+
+######### Get tasks of a connector ######
+
+curl http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/tasks
+
+######### Restart a task of a connector ##########
+
+POST http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/tasks/0/restart
+
+######### Get connector plugins ########
+
+GET http://hadoop-fra-5.intern.beon.net:8083/connector-plugins
+
+######## Validate the provided configuration against configuration definition ########
+
+PUT http://hadoop-fra-5.intern.beon.net:8083/connector-plugins/FileStreamSourceConnector/config/validate
+Content-Type: application/json
+Accept: application/json
+
+{
+    "connector.class": "FileStreamSource",
+    "tasks.max": "2",
+    "topic": "ITERGO_A_KC",
+    "file": "/tmp/test.txt",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter"
+}

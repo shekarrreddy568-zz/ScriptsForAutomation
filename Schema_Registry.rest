@@ -1,31 +1,28 @@
 
+####### List the subjects ##########
 GET http://hadoop-fra-5.intern.beon.net:8081/subjects
 
-###############
+curl http://hadoop-fra-5.intern.beon.net:8081/subjects
+
+######### List the subjects with username and password ######
 GET http://hadoop-fra-5.intern.beon.net:8081/subjects
 Authorization: Basic harry changeme
 
-###################
+########### List the versions for subject ########
 
 GET http://hadoop-fra-5.intern.beon.net:8081/subjects/transactions-value/versions
 
-####################
+curl http://hadoop-fra-5.intern.beon.net:8081/subjects/transactions-value/versions
+
+########### Read the specific schema version #########
 
 GET http://hadoop-fra-5.intern.beon.net:8081/subjects/transactions-value/versions/1
 
-########
+######## Post the schema ##########
 
 POST http://hadoop-fra-5.intern.beon.net:8081/subjects/transactions1-value/versions
 Content-Type: application/vnd.schemaregistry.v1+json
 
 {
-    "schema": "{ \"type\":\"record\", \"name\":\"Payment\", \"namespace\":\"io.confluent.examples.clients.basicavro\",\"fields\":[{\"name\":\"id\",\"type\":\"string\"},{\"name\":\"amount\",\"type\":\"double\"}]}" 
+    "schema": "{ \"type\":\"record\", \"name\":\"Payment\",\"namespace\":\"io.confluent.examples.clients.basicavro\",\"fields\":[{\"name\":\"id\",\"type\":\"string\"},{\"name\":\"amount\",\"type\":\"double\"}]}" 
 }
-
-#############
-
-curl http://hadoop-fra-5.intern.beon.net:8081/subjects
-
-##########
-
-curl http://hadoop-fra-5.intern.beon.net:8081/subjects/transactions-value/versions
