@@ -7,7 +7,7 @@ curl http://hadoop-fra-5.intern.beon.net:8083/connectors
 
 curl http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source
 
-####### Describe Connector ######
+####### Describe Connector config ######
 
 curl http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/config
 
@@ -31,6 +31,15 @@ curl -X POST -H https://hadoop-fra-5.intern.beon.net:8083/connectors/file-source
 ###### Delete a Connector ###########
 
 curl -X DELETE http://hadoop-fra-5.intern.beon.net:8083/connectors/file-sink
+
+######### Get tasks of a connector ######
+
+curl http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/tasks
+
+######### Restart a task of a connector ##########
+
+POST http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/tasks/0/restart
+
 
 ####### Create a connector ##########
 
@@ -85,15 +94,6 @@ Accept: application/json
     "key.converter": "org.apache.kafka.connect.json.JsonConverter",
     "value.converter": "org.apache.kafka.connect.json.JsonConverter"
 }
-
-
-######### Get tasks of a connector ######
-
-curl http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/tasks
-
-######### Restart a task of a connector ##########
-
-POST http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/tasks/0/restart
 
 ######### Get connector plugins ########
 
