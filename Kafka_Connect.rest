@@ -18,15 +18,17 @@ curl http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/status
 
 #### Restart connector #########
 
-curl -X POST -H https://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/restart
+POST http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/restart
+# curl -X POST -H http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/restart
 
 #### Pause connector #########
 
-curl -X POST -H https://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/pause
+PUT http://hadoop-fra-5.intern.beon.net:8083/connectors/file-sink/pause
+#curl -X PUT -H http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/pause
 
 #### Resume connector #########
-
-curl -X POST -H https://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/resume
+PUT http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/resume
+#curl -X PUT -H http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/resume
 
 ###### Delete a Connector ###########
 
