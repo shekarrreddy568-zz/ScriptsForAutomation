@@ -1,0 +1,32 @@
+
+######  List streams ###########
+curl -X POST 
+     -H "Content-Type: application/vnd.ksql.v1+json; charset=utf-8" \
+     --data '{"ksql": "LIST STREAMS;","streamsProperties": {}}' \
+     "http://hadoop-fra-5.intern.beon.net:8088/ksql" 
+
+######## streaming data from Kstream #########
+
+curl -X POST 
+     -H "Content-Type: application/vnd.ksql.v1+json; charset=utf-8" \
+     --data '{"ksql": "SELECT * FROM S_TEST;","streamsProperties": {}}' \
+    "http://hadoop-fra-5.intern.beon.net:8088/query" 
+
+##### Status of a KSQL Server #######
+curl -sX GET "http://hadoop-fra-5.intern.beon.net:8088/info" 
+
+###### Run a KSQL Statement #########
+
+POST http://hadoop-fra-5.intern.beon.net:8088/ksql
+Accept: application/vnd.ksql.v1+json
+Content-Type: application/vnd.ksql.v1+json
+
+
+{
+  "ksql": "CREATE STREAM pageviews_home AS SELECT * FROM test000;",
+  "streamsProperties": {"ksql.streams.auto.offset.reset": "earliest"}
+}
+
+######  current command status for a CREATE, DROP, or TERMINATE statement ####
+
+GET http://hadoop-fra-5.intern.beon.net:8088/status/stream/S_TEST/create
