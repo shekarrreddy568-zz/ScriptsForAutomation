@@ -2,7 +2,7 @@
 ####### List the subjects ##########
 GET http://hadoop-fra-5.intern.beon.net:8081/subjects
 
-curl http://hadoop-fra-5.intern.beon.net:8081/subjects
+#curl http://hadoop-fra-5.intern.beon.net:8081/subjects
 
 ######### List the subjects with username and password ######
 GET http://hadoop-fra-5.intern.beon.net:8081/subjects
