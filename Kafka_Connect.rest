@@ -27,12 +27,12 @@ PUT http://hadoop-fra-5.intern.beon.net:8083/connectors/file-sink/pause
 #curl -X PUT -H http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/pause
 
 #### Resume connector #########
-PUT http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/resume
+PUT http://hadoop-fra-5.intern.beon.net:8083/connectors/file-sink/resume
 #curl -X PUT -H http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source/resume
 
 ###### Delete a Connector ###########
 
-curl -X DELETE http://hadoop-fra-5.intern.beon.net:8083/connectors/file-sink
+curl -X DELETE http://hadoop-fra-5.intern.beon.net:8083/connectors/file-source
 
 ######### Get tasks of a connector ######
 
@@ -59,7 +59,7 @@ Accept: application/json
     "config": {
         "connector.class": "FileStreamSource",
         "tasks.max": "1",
-        "topic": "ITERGO_A_KC",
+        "topic": "ITERGO_A_T5",
         "file": "/tmp/test.txt",
         "key.converter": "org.apache.kafka.connect.json.JsonConverter",
         "value.converter": "org.apache.kafka.connect.json.JsonConverter"}
@@ -77,7 +77,7 @@ Accept: application/json
         "connector.class": "FileStreamSink",
         "tasks.max": "1",
         "file": "/tmp/test.sink.txt",
-        "topics": "ITERGO_A_KC",
+        "topics": "ITERGO_A_T5",
         "key.converter": "org.apache.kafka.connect.json.JsonConverter",
         "value.converter": "org.apache.kafka.connect.json.JsonConverter"}
 }
